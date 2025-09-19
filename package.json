@@ -1,0 +1,60 @@
+{
+	"name": "ai-debugger",
+	"publisher": "ismailamin",
+	"displayName": "AI Debugger",
+	"description": "An AI-powered debugging extension",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.104.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onView:ai-debugger-view",
+		"onCommand:ai-debugger.readFile"
+	],
+	"main": "./extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "ai-debugger.readFile",
+				"title": "Read Current File"
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "ai-debugger-sidebar",
+					"title": "AI Debugger",
+					"icon": "$(bug)"
+				}
+			]
+		},
+		"views": {
+			"ai-debugger-sidebar": [
+				{
+					"id": "ai-debugger-view",
+					"name": "Debugger Panel",
+					"type": "webview"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"lint": "eslint .",
+		"pretest": "npm run lint",
+		"test": "vscode-test"
+	},
+	"devDependencies": {
+		"@types/node": "22.x",
+		"@types/vscode": "^1.104.0",
+		"@vscode/test-cli": "^0.0.11",
+		"@vscode/test-electron": "^2.5.2",
+		"eslint": "^9.34.0"
+	},
+	"dependencies": {
+		"@google/genai": "^1.19.0",
+		"dotenv": "^17.2.2"
+	}
+}
