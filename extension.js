@@ -82,7 +82,7 @@ class GeminiAnalystProvider {
 		}
 
 		await editor.edit((editBuilder) => {
-			editBuilder.replace(selection, fix);
+			editBuilder.replace(selection, fix.slice(1, -1));
 		});
 
 		// Clear the selection after applying the fix
@@ -99,8 +99,8 @@ class GeminiAnalystProvider {
 		if (this._view) {
 			this._view.webview.postMessage({
 				command: "showAnalysis",
-				error: error,
-				fix: fix,
+				error,
+				fix,
 			});
 		}
 	}
@@ -335,7 +335,7 @@ function activate(context) {
 			// 2. Prepare the prompt
 			const prompt = `Analyze the following code snippet for potential errors or bugs. Respond strictly with two parts, without any extra explanation, formatting, or conversational text. The response must use the exact format provided below:
 
-Error: "Your error is: ..."
+Error: "concise error description"
 Fix: concise code fix suggestion
 
 Code to analyze:\n\n\`\`\`\n${cleanedCode}\n\`\`\`
@@ -364,7 +364,7 @@ Fix: "No fix needed."`;
 				const text = response.text.trim();
 
 				// 5. Parse the straight-to-the-point response
-				const errorMatch = text.match(/Error:\s*"(.*)"/s);
+				const errorMatch = text.match(/Error:\s*"(.*?)"/s);
 				const fixMatch = text.match(/Fix:\s*([\s\S]*)/s); // Match from 'Fix:' to the end
 
 				if (errorMatch && fixMatch) {
