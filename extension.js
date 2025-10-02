@@ -82,7 +82,7 @@ class GeminiAnalystProvider {
 		}
 
 		await editor.edit((editBuilder) => {
-			editBuilder.replace(selection, fix.slice(1, -1));
+			editBuilder.replace(selection, fix.replace(/^"(.*)"$/, "$1"));
 		});
 
 		// Clear the selection after applying the fix
@@ -217,7 +217,7 @@ class GeminiAnalystProvider {
 
                 <script>
                     const vscode = acquireVsCodeApi();
-                    let currentFix = '';
+                    let currentFix = '-- Fix code will appear here --';
 
                     function switchTab(tabName) {
                         document.getElementById('error-tab').classList.remove('active');
@@ -254,7 +254,7 @@ class GeminiAnalystProvider {
                             case 'startLoading':
                                 document.getElementById('loading').classList.remove('hidden');
                                 document.getElementById('errorMessage').innerHTML = 'Sending code for analysis...';
-                                document.getElementById('fixSuggestion').textContent = '';
+                                document.getElementById('fixSuggestion').textContent = '-- fix code will appear here --';
                                 document.getElementById('applyFixButton').disabled = true;
                                 document.getElementById('applyFixButton').style.opacity = '0.7';
                                 switchTab('error'); // Show error tab during loading
@@ -280,6 +280,61 @@ class GeminiAnalystProvider {
  * Main activation function for the extension.
  * @param {vscode.ExtensionContext} context
  */
+
+async function runGeminiRequest(prompt, code) {
+	try {
+		const apiKey =
+			process.env.GEMINI_API_KEY || "AIzaSyBVLGsOx2pL8za5bO7qACLkkPuLYPyyRDw";
+		if (!apiKey) {
+			vscode.window.showErrorMessage(
+				"GEMINI_API_KEY environment variable is not set. Please set it to use the Gemini Code Analyst extension."
+			);
+			return;
+		}
+		const ai = new GoogleGenAI({ apiKey });
+		const model = "gemini-2.5-flash";
+		// 4. Call the Gemini API
+		const response = await ai.models.generateContent({
+			model,
+			contents: [{ role: "user", parts: [{ text: prompt }] }],
+			config: {
+				// Force a low temperature for predictable, straight-to-the-point answers
+				temperature: 0.1,
+			},
+		});
+
+		const text = response.text.trim();
+
+		// 5. Parse the straight-to-the-point response
+		const errorMatch = text.match(/Error:\s*([\s\S]*?)\s*Fix:/);
+		const fixMatch = text.match(/Fix:\s*([\s\S]*)/s); // Match from 'Fix:' to the end
+
+		let geminiError = "Could not get a response from Gemini.";
+		let geminiFix = "Please check the extension log or your API key.";
+
+		if (errorMatch && fixMatch) {
+			geminiError = errorMatch[1].trim().replace(/^"(.*)"$/, "$1");
+			// Clean up the fix: remove code fences if Gemini added them, and trim
+			geminiFix = fixMatch[1]
+				.replace(/```[\s\S]*?\n|```/g, "")
+				.replace(/^"(.*)"$/, "$1")
+				.trim();
+		} else {
+			// Fallback if parsing fails (e.g., if Gemini didn't follow the format)
+			geminiError =
+				"Gemini response could not be parsed. Raw response: " + text;
+			geminiFix = code; // Default to the original code
+			vscode.window.showWarningMessage(
+				"Gemini did not follow the required output format."
+			);
+		}
+		return { geminiError, geminiFix };
+	} catch (e) {
+		geminiError = `Gemini API Error: ${e.message}`;
+		console.error("Gemini API Error:", e);
+		return { geminiError, geminiFix: "No fix available due to API error." };
+	}
+}
 function activate(context) {
 	console.log("Gemini Code Analyst is now active!");
 
@@ -288,16 +343,7 @@ function activate(context) {
 
 	// --- Gemini API Setup ---
 	// Use the API key from an environment variable (GEMINI_API_KEY)
-	const apiKey =
-		process.env.GEMINI_API_KEY || "AIzaSyBVLGsOx2pL8za5bO7qACLkkPuLYPyyRDw";
-	if (!apiKey) {
-		vscode.window.showErrorMessage(
-			"GEMINI_API_KEY environment variable is not set. Please set it to use the Gemini Code Analyst extension."
-		);
-		return;
-	}
-	const ai = new GoogleGenAI({ apiKey });
-	const model = "gemini-2.5-flash"; // Good model for concise code analysis/fixes
+	// Good model for concise code analysis/fixes
 
 	// --- Command Registration ---
 	let disposable = vscode.commands.registerCommand(
@@ -335,56 +381,31 @@ function activate(context) {
 			// 2. Prepare the prompt
 			const prompt = `Analyze the following code snippet for potential errors or bugs. Respond strictly with two parts, without any extra explanation, formatting, or conversational text. The response must use the exact format provided below:
 
-Error: "concise error description"
-Fix: concise code fix suggestion
+				Rules:
+				- If you identify an error, provide a concise description and a suggested fix.
+				- If no errors are found, explicitly state that no errors were found and no fix is needed.
+				- Do not include any additional commentary or explanations.
+				- Use plain text only; do not use markdown or code blocks in your response.
+				-the fix should be a direct code snippet or line that can be applied.
 
-Code to analyze:\n\n\`\`\`\n${cleanedCode}\n\`\`\`
-If there are no real errors, respond with:
-Error: "No errors found."
-Fix: "No fix needed."`;
+				Format:
+
+				Error: "concise error description"
+				Fix: concise code fix suggestion
+
+				Code to analyze:\n\n\`\`\`\n${cleanedCode}\n\`\`\`
+				If there are no code errors, respond with:
+				Error: "No errors found."
+				Fix: "No fix needed."`;
 
 			// 3. Show loading state in the sidebar and make it visible
 			analystProvider._view.webview.postMessage({ command: "startLoading" });
 			analystProvider._view.show(true); // Bring the sidebar into focus
 
-			let geminiError = "Could not get a response from Gemini.";
-			let geminiFix = "Please check the extension log or your API key.";
-
-			try {
-				// 4. Call the Gemini API
-				const response = await ai.models.generateContent({
-					model,
-					contents: [{ role: "user", parts: [{ text: prompt }] }],
-					config: {
-						// Force a low temperature for predictable, straight-to-the-point answers
-						temperature: 0.1,
-					},
-				});
-
-				const text = response.text.trim();
-
-				// 5. Parse the straight-to-the-point response
-				const errorMatch = text.match(/Error:\s*"(.*?)"/s);
-				const fixMatch = text.match(/Fix:\s*([\s\S]*)/s); // Match from 'Fix:' to the end
-
-				if (errorMatch && fixMatch) {
-					geminiError = errorMatch[1].trim();
-					// Clean up the fix: remove code fences if Gemini added them, and trim
-					geminiFix = fixMatch[1].replace(/```[\s\S]*?\n|```/g, "").trim();
-				} else {
-					// Fallback if parsing fails (e.g., if Gemini didn't follow the format)
-					geminiError =
-						"Gemini response could not be parsed. Raw response: " + text;
-					geminiFix = cleanedCode; // Default to the original code
-					vscode.window.showWarningMessage(
-						"Gemini did not follow the required output format."
-					);
-				}
-			} catch (e) {
-				geminiError = `Gemini API Error: ${e.message}`;
-				console.error("Gemini API Error:", e);
-			}
-
+			const { geminiError, geminiFix } = await runGeminiRequest(
+				prompt,
+				cleanedCode
+			);
 			// 6. Post the final result to the Webview
 			analystProvider.postAnalysisResult(geminiError, geminiFix);
 		}
