@@ -1,0 +1,73 @@
+body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+		Arial, sans-serif;
+	color: var(--vscode-foreground);
+	background-color: var(--vscode-editor-background);
+	padding: 10px;
+	margin: 0;
+}
+.tab-container {
+	display: flex;
+	border-bottom: 1px solid var(--vscode-separator-border);
+	margin-bottom: 10px;
+}
+.tab {
+	padding: 8px 15px;
+	cursor: pointer;
+	font-weight: 500;
+	border-radius: 5px 5px 0 0;
+	color: var(--vscode-foreground);
+	opacity: 0.6;
+}
+.tab.active {
+	opacity: 1;
+	border-bottom: 2px solid var(--vscode-textLink-foreground);
+	color: var(--vscode-textLink-foreground);
+}
+.tab-content {
+	padding-top: 10px;
+}
+.hidden {
+	display: none;
+}
+pre {
+	background-color: var(--vscode-editorGroupHeader-tabsBackground);
+	padding: 10px;
+	border-radius: 4px;
+	overflow-x: auto;
+	white-space: pre-wrap; /* Allows wrapping */
+	word-break: break-all; /* Helps with long lines in code */
+	font-family: "Consolas", "Monaco", "Courier New", monospace;
+	font-size: 13px;
+}
+#applyFixButton {
+	background-color: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+	border: none;
+	padding: 8px 15px;
+	border-radius: 5px;
+	cursor: pointer;
+	width: 100%;
+	margin-top: 15px;
+	font-weight: bold;
+}
+#applyFixButton:hover {
+	background-color: var(--vscode-button-hoverBackground);
+}
+.loading-spinner {
+	border: 4px solid var(--vscode-editor-background);
+	border-top: 4px solid var(--vscode-textLink-foreground);
+	border-radius: 50%;
+	width: 30px;
+	height: 30px;
+	animation: spin 1s linear infinite;
+	margin: 20px auto;
+}
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
