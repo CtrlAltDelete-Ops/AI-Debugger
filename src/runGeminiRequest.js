@@ -13,12 +13,11 @@ async function runGeminiRequest(prompt, code) {
 		}
 		const ai = new GoogleGenAI({ apiKey });
 		const model = "gemini-2.5-flash";
-		// 4. Call the Gemini API
+
 		const response = await ai.models.generateContent({
 			model,
 			contents: [{ role: "user", parts: [{ text: prompt }] }],
 			config: {
-				// Force a low temperature for predictable, straight-to-the-point answers
 				temperature: 0.1,
 			},
 		});
@@ -27,7 +26,7 @@ async function runGeminiRequest(prompt, code) {
 
 		// 5. Parse the straight-to-the-point response
 		const errorMatch = text.match(/Error:\s*([\s\S]*?)\s*Fix:/);
-		const fixMatch = text.match(/Fix:\s*([\s\S]*)/s); // Match from 'Fix:' to the end
+		const fixMatch = text.match(/Fix:\s*([\s\S]*)/s);
 
 		let geminiError = "Could not get a response from Gemini.";
 		let geminiFix = "Please check the extension log or your API key.";

@@ -6,6 +6,7 @@ const { GeminiAnalystProvider } = require("./src/GeminiAnalystProvider");
 const { runGeminiRequest } = require("./src/runGeminiRequest");
 const { analyzeCommand } = require("./src/analyzeCommand");
 const { GeminiWormUp } = require("./src/GeminiWormUp");
+const { buildEmbeddings } = require("./src/embeddings");
 
 /**
  * Main activation function for the extension.
@@ -14,6 +15,10 @@ const { GeminiWormUp } = require("./src/GeminiWormUp");
 
 function activate(context) {
 	console.log("Gemini Code Analyst is now active!");
+
+	// --- Build initial embeddings for the workspace ---
+	const projectRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+	if (projectRoot) buildEmbeddings(projectRoot);
 
 	// --- Warm-up Gemini API ---
 	const wormUp = new GeminiWormUp();

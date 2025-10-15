@@ -1,5 +1,11 @@
 const vscode = require("vscode");
 const { runGeminiRequest } = require("./runGeminiRequest");
+const { retrieveRelevantChunks } = require("./ragRetriever");
+
+const ai = new (require("@google/genai").GoogleGenAI)({
+	apiKey:
+		process.env.GEMINI_API_KEY || "AIzaSyBVLGsOx2pL8za5bO7qACLkkPuLYPyyRDw",
+});
 
 async function analyzeCommand(analystProvider) {
 	const editor = vscode.window.activeTextEditor;
@@ -18,8 +24,6 @@ async function analyzeCommand(analystProvider) {
 
 	let selectedCode = editor.document.getText(selection);
 
-	// 1. Preprocess the code input
-	// Remove extra whitespace (trim start/end) and ensure it's clean
 	const cleanedCode = selectedCode.trim();
 	if (cleanedCode.length === 0) {
 		vscode.window.showWarningMessage(
@@ -28,9 +32,14 @@ async function analyzeCommand(analystProvider) {
 		return;
 	}
 
-	const fullDocument = editor.document.getText();
-	const contextCode = fullDocument.trim();
-	// Full document text for context if needed
+	const embeddingRes = await ai.embeddings.create({
+		model: "codeembedding-gecko-001",
+		input: selectedCode,
+	});
+	const queryVector = embeddingRes.data[0].embedding;
+
+	// 2. Retrieve top 5 relevant chunks
+	const relevantChunks = retrieveRelevantChunks(queryVector, 5);
 
 	// Store the original selection for safe application later
 	analystProvider._lastSelection = cleanedCode;
@@ -53,7 +62,9 @@ async function analyzeCommand(analystProvider) {
 				Fix: concise code fix suggestion
 
 				Code to analyze:\n\n\`\`\`\n${cleanedCode}\n\`\`\`
-				context code(for reference):\n\n\`\`\`\n${contextCode}\n\`\`\`
+				context code(for reference):\n\n\`\`\`\n${relevantChunks.join(
+					"\n---\n"
+				)}\n\`\`\`
 				--- End of code ---
 				
 				If there are no code errors, respond with:
