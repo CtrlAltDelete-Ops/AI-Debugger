@@ -24,7 +24,7 @@ async function runGeminiRequest(prompt, code) {
 
 		const text = response.text.trim();
 
-		// 5. Parse the straight-to-the-point response
+		// Parse the response
 		const errorMatch = text.match(/Error:\s*([\s\S]*?)\s*Fix:/);
 		const fixMatch = text.match(/Fix:\s*([\s\S]*)/s);
 
@@ -39,7 +39,7 @@ async function runGeminiRequest(prompt, code) {
 				.replace(/^"(.*)"$/, "$1")
 				.trim();
 		} else {
-			// Fallback if parsing fails (e.g., if Gemini didn't follow the format)
+			// This only executes if Gemini doesn't follow the format
 			geminiError =
 				"Gemini response could not be parsed. Raw response: " + text;
 			geminiFix = code; // Default to the original code
