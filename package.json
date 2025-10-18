@@ -1,74 +1,73 @@
 {
-	"name": "gemini-code-analyst",
-	"displayName": "Gemini Code Analyst",
-	"description": "Analyze and fix selected code using the Gemini API.",
-	"version": "0.0.1",
+	"name": "gemini-code-assistant",
+	"displayName": "Gemini Code Assistant",
+	"description": "Analyze, scan, and explain your code using Gemini AI with a RAG-powered sidebar.",
+	"version": "1.0.0",
+	"publisher": "your-name",
 	"engines": {
 		"vscode": "^1.80.0"
 	},
 	"categories": [
 		"Other"
 	],
-	"main": "./extension.js",
 	"activationEvents": [
-		"onCommand:geminiCodeAnalyst.analyzeSelectedCode",
-		"onView:geminiCodeAnalyst.sidebar"
+		"onCommand:geminiCode.analyzeSelected",
+		"onCommand:geminiCode.scanProject",
+		"onCommand:geminiCode.explainError",
+		"onView:geminiCodeSidebar"
 	],
+	"main": "./extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "geminiCodeAnalyst.analyzeSelectedCode",
-				"title": "Analyze Code with Gemini"
+				"command": "geminiCode.analyzeSelected",
+				"title": "Analyze Selected Code"
+			},
+			{
+				"command": "geminiCode.scanProject",
+				"title": "Scan Project for Errors"
+			},
+			{
+				"command": "geminiCode.explainError",
+				"title": "Explain Error in Code"
 			}
 		],
+		"menus": {
+			"editor/context": [
+				{
+					"command": "geminiCode.analyzeSelected",
+					"when": "editorHasSelection",
+					"group": "navigation"
+				},
+				{
+					"command": "geminiCode.explainError",
+					"when": "editorHasSelection",
+					"group": "navigation"
+				}
+			]
+		},
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "gemini-analyst-container",
-					"title": "Gemini Code Analyst",
+					"id": "geminiSidebarContainer",
+					"title": "Gemini",
 					"icon": "svg/bug-solid-full.svg"
 				}
 			]
 		},
 		"views": {
-			"gemini-analyst-container": [
+			"geminiSidebarContainer": [
 				{
-					"id": "geminiCodeAnalyst.sidebar",
-					"name": "Analysis",
+					"id": "geminiCodeSidebar",
+					"name": "Gemini Analysis",
 					"type": "webview"
-				}
-			]
-		},
-		"menus": {
-			"editor/context": [
-				{
-					"command": "geminiCodeAnalyst.analyzeSelectedCode",
-					"group": "navigation",
-					"when": "editorHasSelection"
 				}
 			]
 		}
 	},
-	"scripts": {
-		"lint": "eslint .",
-		"pretest": "npm run lint",
-		"test": "node ./test/runTest.js"
-	},
-	"devDependencies": {
-		"@types/glob": "^8.1.0",
-		"@types/mocha": "^10.0.1",
-		"@types/node": "20.2.5",
-		"@types/vscode": "^1.80.0",
-		"@typescript-eslint/eslint-plugin": "^5.59.8",
-		"@typescript-eslint/parser": "^5.59.8",
-		"@vscode/test-electron": "^2.3.2",
-		"eslint": "^8.41.0",
-		"glob": "^8.1.0",
-		"mocha": "^10.2.0",
-		"typescript": "^5.1.3"
-	},
 	"dependencies": {
-		"@google/genai": "^1.21.0",
-		"@google/generative-ai": "^0.24.1"
+		"@google/genai": "^1.20.0",
+		"axios": "^1.6.0",
+		"dotenv": "^17.2.3"
 	}
 }

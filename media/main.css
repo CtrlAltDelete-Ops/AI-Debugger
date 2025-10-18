@@ -1,73 +1,363 @@
-body {
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-		Arial, sans-serif;
-	color: var(--vscode-foreground);
-	background-color: var(--vscode-editor-background);
-	padding: 10px;
-	margin: 0;
+/* main.css - polished VS Code themed UI for sidebar */
+
+/* Use VS Code theme tokens for consistent colors */
+:root {
+	--vscode-font-family: var(
+		--vscode-editor-font-family,
+		-apple-system,
+		BlinkMacSystemFont,
+		"Segoe UI",
+		Roboto,
+		Helvetica,
+		Arial
+	);
+	--vscode-font-size: var(--vscode-editor-font-size, 12px);
+	--bg: var(--vscode-editor-background);
+	--panel-bg: var(--vscode-sideBar-background, var(--bg));
+	--fg: var(--vscode-editor-foreground);
+	--muted: var(--vscode-descriptionForeground);
+	--accent: var(--vscode-textLink-foreground);
+	--card-bg: var(--vscode-input-background);
+	--card-border: var(--vscode-editorWidget-border);
+	--success: #22c55e;
+	--danger: #ef4444;
+	--shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
 }
-.tab-container {
+
+/* Reset and base */
+* {
+	box-sizing: border-box;
+}
+html,
+body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	font-family: var(--vscode-font-family);
+	font-size: var(--vscode-font-size);
+	color: var(--fg);
+	background: var(--panel-bg);
+}
+#root {
 	display: flex;
-	border-bottom: 1px solid var(--vscode-separator-border);
-	margin-bottom: 10px;
+	flex-direction: column;
+	height: 100%;
+}
+
+/* Header */
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 12px 8px 12px;
+	gap: 12px;
+	border-bottom: 1px solid rgba(128, 128, 128, 0.06);
+}
+.title {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.logo {
+	width: 36px;
+	height: 36px;
+	flex-shrink: 0;
+	border-radius: 6px;
+	box-shadow: var(--shadow);
+}
+.title-text .main {
+	font-weight: 600;
+	font-size: 13px;
+}
+.title-text .sub {
+	font-size: 11px;
+	color: var(--muted);
+	margin-top: 2px;
+}
+
+/* Header actions */
+.header-actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+.icon-btn {
+	background: transparent;
+	border: none;
+	padding: 6px;
+	border-radius: 6px;
+	cursor: pointer;
+	color: var(--muted);
+	transition: background 0.15s, color 0.15s;
+}
+.icon-btn:hover {
+	background: rgba(128, 128, 128, 0.06);
+	color: var(--fg);
+}
+
+/* Tabs */
+.tabs {
+	display: flex;
+	position: relative;
+	gap: 8px;
+	padding: 10px 12px;
+	align-items: center;
 }
 .tab {
-	padding: 8px 15px;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border-radius: 8px;
 	cursor: pointer;
-	font-weight: 500;
-	border-radius: 5px 5px 0 0;
-	color: var(--vscode-foreground);
-	opacity: 0.6;
+	background: transparent;
+	color: var(--muted);
+	border: none;
+	font-weight: 600;
+	transition: all 0.18s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+.tab:hover {
+	background: rgba(128, 128, 128, 0.02);
+	color: var(--fg);
+	transform: translateY(-1px);
 }
 .tab.active {
-	opacity: 1;
-	border-bottom: 2px solid var(--vscode-textLink-foreground);
-	color: var(--vscode-textLink-foreground);
+	color: var(--accent);
+	background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), transparent);
+	box-shadow: none;
+	transform: translateY(0);
 }
-.tab-content {
-	padding-top: 10px;
+.tab-icon svg {
+	width: 16px;
+	height: 16px;
+	display: block;
+}
+
+/* Tab indicator (animated sliding underline) */
+.tab-indicator {
+	position: absolute;
+	height: 3px;
+	bottom: 4px;
+	left: -9.7px;
+	width: 60px;
+	background: linear-gradient(90deg, var(--accent), rgba(6, 182, 212, 0.9));
+	border-radius: 3px;
+	transition: transform 0.22s cubic-bezier(0.2, 0.9, 0.2, 1), width 0.18s;
+	box-shadow: 0 6px 18px rgba(6, 182, 212, 0.08);
+	will-change: transform, width;
+}
+
+/* Main content */
+.content {
+	padding: 8px 12px;
+	overflow: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	flex: 1;
+}
+
+/* Panel layout */
+.panel {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
 }
 .hidden {
 	display: none;
 }
-pre {
-	background-color: var(--vscode-editorGroupHeader-tabsBackground);
-	padding: 10px;
-	border-radius: 4px;
-	overflow-x: auto;
-	white-space: pre-wrap; /* Allows wrapping */
-	word-break: break-all; /* Helps with long lines in code */
-	font-family: "Consolas", "Monaco", "Courier New", monospace;
+
+/* Panel header */
+.panel-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+}
+.panel-header h3 {
+	margin: 0;
 	font-size: 13px;
 }
-#applyFixButton {
-	background-color: var(--vscode-button-background);
-	color: var(--vscode-button-foreground);
+.panel-header .muted {
+	font-size: 11px;
+	color: var(--muted);
+	margin-top: 4px;
+}
+.panel-actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+/* Buttons */
+.primary {
+	background: linear-gradient(180deg, var(--accent), rgba(6, 182, 212, 0.9));
+	color: #fff;
 	border: none;
-	padding: 8px 15px;
-	border-radius: 5px;
+	padding: 8px 12px;
+	border-radius: 6px;
 	cursor: pointer;
-	width: 100%;
-	margin-top: 15px;
-	font-weight: bold;
+	font-weight: 600;
+	box-shadow: 0 6px 18px rgba(6, 182, 212, 0.08);
+	transition: transform 0.12s;
 }
-#applyFixButton:hover {
-	background-color: var(--vscode-button-hoverBackground);
+.primary:hover {
+	transform: translateY(-2px);
 }
-.loading-spinner {
-	border: 4px solid var(--vscode-editor-background);
-	border-top: 4px solid var(--vscode-textLink-foreground);
+.link-btn {
+	background: transparent;
+	border: none;
+	color: var(--muted);
+	cursor: pointer;
+	font-size: 12px;
+	padding: 6px;
+}
+
+/* Cards */
+.analysis-area {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 10px;
+}
+.card {
+	background: var(--card-bg);
+	border: 1px solid var(--card-border);
+	border-radius: 8px;
+	box-shadow: var(--shadow);
+	overflow: hidden;
+}
+.card-head {
+	display: flex;
+	justify-content: space-between;
+	padding: 10px 12px;
+	border-bottom: 1px solid rgba(128, 128, 128, 0.04);
+	align-items: center;
+}
+.card-title {
+	font-weight: 700;
+	font-size: 12px;
+}
+.card-sub {
+	font-size: 11px;
+	color: var(--muted);
+	margin-left: 8px;
+}
+.card-body {
+	padding: 12px;
+	white-space: pre-wrap;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",
+		monospace;
+	font-size: 12px;
+	color: var(--fg);
+	min-height: 48px;
+}
+.card-body.code {
+	background: linear-gradient(180deg, rgba(0, 0, 0, 0.01), transparent);
+	margin: 0;
+}
+
+/* Card footer */
+.card-footer {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	justify-content: flex-end;
+	padding: 10px;
+	border-top: 1px solid rgba(128, 128, 128, 0.04);
+}
+
+/* Scan list */
+.scan-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+.scan-item {
+	display: flex;
+	gap: 10px;
+	padding: 10px;
+	border-radius: 8px;
+	background: linear-gradient(180deg, rgba(0, 0, 0, 0.01), transparent);
+	align-items: center;
+	cursor: pointer;
+	transition: transform 0.08s, background 0.12s;
+	border: 1px solid rgba(128, 128, 128, 0.03);
+}
+.scan-item:hover {
+	transform: translateY(-2px);
+}
+.scan-sev {
+	width: 10px;
+	height: 10px;
 	border-radius: 50%;
-	width: 30px;
-	height: 30px;
-	animation: spin 1s linear infinite;
-	margin: 20px auto;
+	flex-shrink: 0;
 }
-@keyframes spin {
+.scan-sev.info {
+	background: #93c5fd;
+}
+.scan-sev.warning {
+	background: #fbbf24;
+}
+.scan-sev.error {
+	background: var(--danger);
+}
+
+/* Explain area */
+.explain-area {
+	padding: 12px;
+}
+
+/* Footer */
+.footer {
+	display: flex;
+	justify-content: space-between;
+	padding: 10px 12px;
+	border-top: 1px solid rgba(128, 128, 128, 0.04);
+	font-size: 11px;
+	color: var(--muted);
+	align-items: center;
+}
+
+.footer-link:hover {
+	color: var(--fg);
+}
+
+/* Loading / typing animation */
+.loading-placeholder {
+	height: 12px;
+	background: linear-gradient(
+		90deg,
+		rgba(255, 255, 255, 0.03),
+		rgba(255, 255, 255, 0.06),
+		rgba(255, 255, 255, 0.03)
+	);
+	border-radius: 6px;
+	animation: shimmer 1.6s linear infinite;
+}
+@keyframes shimmer {
 	0% {
-		transform: rotate(0deg);
+		background-position: -200px 0;
 	}
 	100% {
-		transform: rotate(360deg);
+		background-position: 200px 0;
 	}
+}
+
+/* Responsive */
+@media (max-width: 420px) {
+	.title-text .main {
+		font-size: 12px;
+	}
+	.tab-label {
+		display: none;
+	}
+}
+
+/* Accessibility focus */
+.tab:focus,
+.primary:focus,
+.icon-btn:focus {
+	outline: 2px solid rgba(6, 182, 212, 0.16);
+	outline-offset: 2px;
+	border-radius: 6px;
 }

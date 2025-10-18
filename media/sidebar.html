@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>Gemini Assistant</title>
+		<link rel="stylesheet" href="{{styleUri}}" />
+	</head>
+	<body>
+		<div id="root" role="application" aria-label="Gemini Assistant Sidebar">
+			<header class="header">
+				<div class="title">
+					<!-- Inline SVG logo -->
+					<svg
+						class="logo"
+						viewBox="0 0 24 24"
+						aria-hidden="true"
+						focusable="false"
+					>
+						<defs>
+							<linearGradient id="g" x1="0" x2="1">
+								<stop offset="0" stop-color="#7c3aed" />
+								<stop offset="1" stop-color="#06b6d4" />
+							</linearGradient>
+						</defs>
+						<rect
+							x="2"
+							y="2"
+							width="20"
+							height="20"
+							rx="4"
+							fill="url(#g)"
+						></rect>
+						<path
+							d="M7 12h10M7 8h6M7 16h10"
+							stroke="#fff"
+							stroke-width="1.6"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+					<div class="title-text">
+						<div class="main">Gemini Assistant</div>
+						<div class="sub">Project-aware analysis & fixes</div>
+					</div>
+				</div>
+
+				<div class="header-actions">
+					<button
+						id="btnSettings"
+						class="icon-btn"
+						title="Settings"
+						aria-label="Settings"
+					>
+						<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+							<path
+								fill="currentColor"
+								d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z"
+							/>
+							<path
+								fill="currentColor"
+								d="M19.4 12a7.4 7.4 0 0 0-.1-1l2.1-1.6-2-3.4-2.5.8a7.2 7.2 0 0 0-1.6-.9L15 2h-6l-.3 1.9c-.6.2-1.2.6-1.8 1L4.8 5.6 2.8 9l2.1 1.6c-.1.3-.1.7-.1 1s0 .7.1 1L2.8 14.4 4.8 18l2.5-.8c.5.4 1.1.7 1.8.9L9 22h6l.3-1.9c.6-.2 1.2-.6 1.8-1l2.5.8 2-3.4-2.1-1.6c.1-.3.1-.7.1-1z"
+							/>
+						</svg>
+					</button>
+				</div>
+			</header>
+
+			<nav class="tabs" role="tablist" aria-label="Sections">
+				<button
+					id="tabAnalyze"
+					class="tab active"
+					role="tab"
+					aria-selected="true"
+					aria-controls="panel-analyze"
+				>
+					<span class="tab-icon" aria-hidden="true">
+						<!-- analyze icon -->
+						<svg viewBox="0 0 24 24">
+							<path fill="currentColor" d="M3 3h18v4H3zM3 10h12v11H3z" />
+						</svg>
+					</span>
+					<span class="tab-label">Analyze</span>
+				</button>
+
+				<button
+					id="tabScan"
+					class="tab"
+					role="tab"
+					aria-selected="false"
+					aria-controls="panel-scan"
+				>
+					<span class="tab-icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24">
+							<path
+								fill="currentColor"
+								d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z"
+							/>
+						</svg>
+					</span>
+					<span class="tab-label">Scan</span>
+				</button>
+
+				<button
+					id="tabExplain"
+					class="tab"
+					role="tab"
+					aria-selected="false"
+					aria-controls="panel-explain"
+				>
+					<span class="tab-icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24">
+							<path
+								fill="currentColor"
+								d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm1.1-7.75-.9.92C12.45 11.1 12 11.5 12 13h-2v-.5c0-1 .45-1.8 1.1-2.45l1.2-1.23A2 2 0 1 0 9 7"
+							/>
+						</svg>
+					</span>
+					<span class="tab-label">Explain</span>
+				</button>
+
+				<div class="tab-indicator" id="tabIndicator" aria-hidden="true"></div>
+			</nav>
+
+			<main class="content" id="content" role="main">
+				<!-- Analyze Panel -->
+				<section
+					id="panel-analyze"
+					class="panel"
+					role="tabpanel"
+					aria-labelledby="tabAnalyze"
+				>
+					<div class="panel-header">
+						<div>
+							<h3>Analyze Code</h3>
+							<p class="muted">
+								Select a snippet or click without selecting to anlyze the entire
+								file.
+							</p>
+						</div>
+						<div class="panel-actions">
+							<button id="runAnalyze" class="primary">Analyze</button>
+						</div>
+					</div>
+
+					<div class="analysis-area">
+						<div class="card">
+							<div class="card-head">
+								<div class="card-title">Error</div>
+								<div class="card-sub">What Gemini found</div>
+							</div>
+							<pre id="analyzeError" class="card-body">No analysis yet.</pre>
+						</div>
+
+						<div class="card">
+							<div class="card-head">
+								<div class="card-title">Fix Suggestion</div>
+								<div class="card-sub">Tap apply to replace selection</div>
+							</div>
+							<pre id="analyzeFix" class="card-body code">
+-- Fix will appear here --</pre
+							>
+							<div class="card-footer">
+								<button id="applyFix" class="primary" disabled>
+									Apply Fix
+								</button>
+								<button id="copyFix" class="icon-btn" title="Copy fix">
+									<svg viewBox="0 0 24 24">
+										<path
+											fill="currentColor"
+											d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"
+										/>
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<!-- Scan Panel -->
+				<section
+					id="panel-scan"
+					class="panel hidden"
+					role="tabpanel"
+					aria-labelledby="tabScan"
+				>
+					<div class="panel-header">
+						<div>
+							<h3>Project Scan</h3>
+							<p class="muted">
+								Background scan for common issues. Click items to jump to code.
+							</p>
+						</div>
+						<div class="panel-actions">
+							<button id="runScan" class="primary">Scan Project</button>
+						</div>
+					</div>
+
+					<div id="scanList" class="scan-list">
+						<div class="empty">
+							No scan results yet. Run a project scan to see issues.
+						</div>
+					</div>
+				</section>
+
+				<!-- Explain Panel -->
+				<section
+					id="panel-explain"
+					class="panel hidden"
+					role="tabpanel"
+					aria-labelledby="tabExplain"
+				>
+					<div class="panel-header">
+						<div>
+							<h3>Explain Error</h3>
+							<p class="muted">
+								Explain selected diagnostic or paste an error message.
+							</p>
+						</div>
+						<div class="panel-actions">
+							<button id="runExplain" class="primary">Explain</button>
+						</div>
+					</div>
+
+					<div class="explain-area card">
+						<pre id="explainText" class="card-body">No explanation yet.</pre>
+					</div>
+				</section>
+			</main>
+
+			<footer class="footer">
+				<div class="footer-left muted">Gemini Assistant • RAG-enabled</div>
+				<div class="footer-right">
+					<button id="openDocs" class="link-btn footer-link">Docs</button>
+					<button id="feedback" class="link-btn footer-link">Feedback</button>
+				</div>
+			</footer>
+		</div>
+
+		<script src="{{scriptUri}}"></script>
+	</body>
+</html>
